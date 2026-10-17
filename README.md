@@ -26,8 +26,7 @@ Only public data and workflow metadata for this repository are collected. The pu
 To enable public deployment:
 
 1. In **Settings → Pages**, choose **GitHub Actions** as the source.
-2. Add repository variable `ENABLE_PAGES` = `true` under **Settings → Secrets and variables → Actions → Variables**.
-3. Run **Actions → Publish dashboard → Run workflow** once. Further successful Monitor workflows automatically deploy updates.
+2. Run **Actions → Publish dashboard → Run workflow** once. Every subsequent successful Monitor workflow automatically deploys updated metrics.
 
 The site is served from `docs/` and uses only HTML, CSS and JavaScript. It reads the generated JSON without a build step.
 
