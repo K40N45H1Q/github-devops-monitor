@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1117">
+  <title>GitHub DevOps Monitor</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0d1117; color: #e6edf3; }
+    main { max-width: 1040px; margin: auto; padding: 54px 24px 80px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+    h1 { font-size: clamp(28px, 5vw, 42px); letter-spacing: -.045em; margin: 14px 0 4px; }
+    h2 { font-size: 18px; margin: 0 0 16px; }
+    p, small { color: #8b949e; }
+    a { color: #58a6ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .eyebrow { color: #3fb950; font-size: 12px; font-weight: 800; letter-spacing: .15em; }
+    .tag { border: 1px solid #30363d; border-radius: 999px; padding: 8px 12px; font-size: 12px; color: #8b949e; }
+    .lead { margin: 18px 0 34px; }
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .card { padding: 22px; background: #161b22; border: 1px solid #30363d; border-radius: 12px; }
+    .label { font-size: 13px; color: #8b949e; }
+    .value { margin-top: 8px; font-size: 30px; font-weight: 750; font-variant-numeric: tabular-nums; }
+    .layout { display: grid; grid-template-columns: 1.5fr 1fr; gap: 14px; margin-top: 14px; }
+    .muted { color: #8b949e; font-size: 13px; }
+    svg { display: block; width: 100%; height: 225px; overflow: visible; }
+    .line { fill: none; stroke: #3fb950; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+    .axis { stroke: #30363d; stroke-width: 1; }
+    table { border-collapse: collapse; width: 100%; font-size: 13px; }
+    td { padding: 12px 0; border-bottom: 1px solid #30363d; }
+    td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+    .signal { color: #3fb950; }
+    footer { margin-top: 34px; font-size: 12px; color: #8b949e; }
+    @media(max-width: 760px) { .grid { grid-template-columns: repeat(2, 1fr); } .layout { grid-template-columns: 1fr; } main { padding-top: 30px; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div><div class="eyebrow">AUTOMATED OBSERVABILITY</div><h1>GitHub DevOps Monitor</h1></div>
+    <div class="tag" id="status">Waiting for metrics</div>
+  </header>
+  <p class="lead">GitHub account telemetry, CI health and time-series snapshots. Built with Go and GitHub Actions.</p>
+  <div class="grid" id="cards"></div>
+  <div class="layout">
+    <section class="card"><h2>Stars over recent observations</h2><svg viewBox="0 0 600 220" role="img" aria-label="Stars over time" id="chart"></svg><div class="muted" id="range"></div></section>
+    <section class="card"><h2>Workflow health</h2><div id="health" class="muted">Awaiting first run</div><p class="muted">Last 100 workflow runs in the monitored repository, excluding unfinished runs.</p></section>
+  </div>
+  <section class="card" style="margin-top:14px"><h2>Top public repositories</h2><table><tbody id="repos"></tbody></table></section>
+  <footer>Latest collection: <span id="updated">Never</span> · Data from the public GitHub API · <a href="data/latest.json">Raw JSON</a></footer>
+</main>
+<script>
+  const el = id => document.getElementById(id);
+  const fmt = n => Number(n || 0).toLocaleString('en-US');
+  const svg = (name, attrs) => { const node = document.createElementNS('http://www.w3.org/2000/svg', name); Object.entries(attrs).forEach(([k,v]) => node.setAttribute(k,v)); return node; };
+  async function load() {
+    const [latest, history] = await Promise.all([
+      fetch('data/latest.json').then(r => { if (!r.ok) throw new Error('No snapshots yet'); return r.json(); }),
+      fetch('data/index.json').then(r => { if (!r.ok) throw new Error('No history yet'); return r.json(); })
+    ]);
+    el('status').textContent = '● Monitoring active';
+    el('status').classList.add('signal');
+    el('updated').textContent = new Date(latest.time).toLocaleString();
+    const entries = [['Repositories', latest.metrics.repositories], ['Total stars', latest.metrics.stars], ['Followers', latest.account.followers], ['Following', latest.account.following]];
+    for (const [label, value] of entries) {
+      const card = document.createElement('article'); card.className = 'card';
+      const name = document.createElement('div'); name.className = 'label'; name.textContent = label;
+      const count = document.createElement('div'); count.className = 'value'; count.textContent = fmt(value);
+      card.append(name, count); el('cards').append(card);
+    }
+    const m = latest.metrics;
+    el('health').textContent = `${fmt(m.succeeded)} succeeded · ${fmt(m.failed)} failed · ${fmt(m.cancelled)} cancelled (of ${fmt(m.recent_runs)} completed)`;
+    for (const repo of m.top_repositories || []) {
+      const tr = document.createElement('tr'), name = document.createElement('td'), stars = document.createElement('td');
+      const link = document.createElement('a'); link.href = `https://github.com/${encodeURIComponent(latest.owner)}/${encodeURIComponent(repo.name)}`;
+      link.textContent = repo.name; name.append(link); stars.textContent = `${fmt(repo.stars)} ★`;
+      tr.append(name, stars); el('repos').append(tr);
+    }
+    const points = history.slice(0, 120).reverse();
+    if (!points.length) return;
+    const values = points.map(p => p.metrics.stars), low = Math.min(...values), high = Math.max(...values);
+    const xy = (v, i) => [18 + (i * 564) / Math.max(1, values.length-1), 196 - (v-low) * 170 / Math.max(1, high-low)];
+    [26, 111, 196].forEach(y => el('chart').append(svg('line', {x1:18,y1:y,x2:582,y2:y,class:'axis'})));
+    el('chart').append(svg('polyline', {points:values.map((v,i)=>xy(v,i).join(',')).join(' '),class:'line'}));
+    const start = new Date(points[0].time).toLocaleDateString(), end = new Date(points.at(-1).time).toLocaleDateString();
+    el('range').textContent = `${start} – ${end} · ${points.length} observations · ${fmt(low)}–${fmt(high)} stars`;
+  }
+  load().catch(e => { el('status').textContent = e.message; el('status').style.color = '#f0883e'; });
+</script>
+</body>
+</html>
