@@ -1,5 +1,5 @@
 {
-  "time": "2026-10-17T12:02:20.416656049Z",
+  "time": "2026-10-17T13:25:22.437865906Z",
   "owner": "K40N45H1Q",
   "repository": "K40N45H1Q/github-devops-monitor",
   "account": {
@@ -12,8 +12,8 @@
     "stars": 2,
     "forks": 0,
     "archived": 0,
-    "recent_runs": 3,
-    "succeeded": 3,
+    "recent_runs": 9,
+    "succeeded": 8,
     "failed": 0,
     "cancelled": 0,
     "top_repositories": [
