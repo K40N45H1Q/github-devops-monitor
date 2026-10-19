@@ -1,0 +1,32 @@
+{
+  "time": "2026-10-19T14:40:08.1585391Z",
+  "owner": "K40N45H1Q",
+  "repository": "K40N45H1Q/github-devops-monitor",
+  "account": {
+    "followers": 44,
+    "following": 44,
+    "public_repos": 2
+  },
+  "metrics": {
+    "repositories": 2,
+    "stars": 2,
+    "forks": 0,
+    "archived": 0,
+    "recent_runs": 25,
+    "succeeded": 24,
+    "failed": 0,
+    "cancelled": 0,
+    "top_repositories": [
+      {
+        "name": "github-devops-monitor",
+        "stars": 1,
+        "forks": 0
+      },
+      {
+        "name": "github-follow-sync",
+        "stars": 1,
+        "forks": 0
+      }
+    ]
+  }
+}
