@@ -1,5 +1,52 @@
 [
   {
+    "time": "2026-10-27T18:42:12.837980972Z",
+    "owner": "K40N45H1Q",
+    "repository": "K40N45H1Q/github-devops-monitor",
+    "account": {
+      "followers": 53,
+      "following": 53,
+      "public_repos": 5
+    },
+    "metrics": {
+      "repositories": 5,
+      "stars": 3,
+      "forks": 0,
+      "archived": 0,
+      "recent_runs": 87,
+      "succeeded": 86,
+      "failed": 0,
+      "cancelled": 0,
+      "top_repositories": [
+        {
+          "name": "K40N45H1Q",
+          "stars": 1,
+          "forks": 0
+        },
+        {
+          "name": "github-devops-monitor",
+          "stars": 1,
+          "forks": 0
+        },
+        {
+          "name": "github-follow-sync",
+          "stars": 1,
+          "forks": 0
+        },
+        {
+          "name": "gh-aw",
+          "stars": 0,
+          "forks": 0
+        },
+        {
+          "name": "run-gemini-cli",
+          "stars": 0,
+          "forks": 0
+        }
+      ]
+    }
+  },
+  {
     "time": "2026-10-27T13:11:56.272856044Z",
     "owner": "K40N45H1Q",
     "repository": "K40N45H1Q/github-devops-monitor",
